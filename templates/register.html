@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block content %}
+        <form action="{{ url_for('newaccount') }}" method="POST">
+            <p>We take your private information very seriously. All data is encrypted not once but twice! in ROT13 to provide the best security.</p><br />
+            <label for="username">Please enter your username:</label>
+            <input type="text" name="username" /><br />
+            <label for="password">Please enter your password:</label>
+            <input type="text" name="password" /><br />
+            <button class="btn">Register!</button>
+        </form>
+{% endblock %}

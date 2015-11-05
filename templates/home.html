@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    {% if cookie_exists('data') != True or valid_session(saves.get('session_id')) != True: %}
+        <p>What does the W3C know?</p>
+        <meta http-equiv="refresh" content="0; url={{ url_for('index') }}" />
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if cookie_exists('data') and valid_session(saves.get('session_id')): %}
+        <p>Welcome {{ db_user_info("session_id",saves.get('session_id')).username }}!</p>
+    {% else: %}
+        <p><a href="{{ url_for('index') }}">Please log in.</a></p>
+    {% endif %}
+    {% if cookie_exists('data') and valid_session(saves.get('session_id')): %}
+        <form action="{{ url_for('newtweet') }}" method="POST">
+            <label for="content">Tweet Message:</label>
+            <input type="text" name="content" /><br />
+            <button class="btn">Submit Tweet</button>
+        </form>
+
+        <h1>Recent Tweets:</h1>
+        {% for tweet in get_tweets("all", "nothing").items(): %}
+            <h3>{{ tweet[1].get('content') }} | By: {{ tweet[1].get('tweeter') }} | On {{ tweet[1].get('time_created') }}</h3>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

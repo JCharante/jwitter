@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    {% if cookie_exists('data') and valid_session(saves.get('session_id')): %}
+        <p>What does the W3C know?</p>
+        <meta http-equiv="refresh" content="0; url={{ url_for('home') }}" />
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if cookie_exists('data') and valid_session(saves.get('session_id')): %}
+        <p>Your Session value is: {{ saves.get('session_id') }}</p>
+    {% else: %}
+        <p>Please log in.</p>
+    {% endif %}
+    {% if cookie_exists('data') and valid_session(saves.get('session_id')): %}
+        <p>You are logged in!</p>
+        <p><a href="{{ url_for('home') }}">Go to your Home</a></p>
+    {% else: %}
+        <form action="{{ url_for('login') }}" method="POST">
+            <p>We take your private information very seriously. All data is encrypted not once but twice! in <a href="https://en.wikipedia.org/wiki/ROT13">ROT13</a> to provide the best security.</p><br />
+            <label for="username">Please enter your username:</label>
+            <input type="text" name="username" /><br />
+            <label for="password">Please enter your password:</label>
+            <input type="text" name="password" /><br />
+            <button class="btn">Log In</button>
+            <p><a href="{{ url_for('register') }}">Don't have an account? Register here!</a></p>
+
+        </form>
+    {% endif %}
+{% endblock %}
