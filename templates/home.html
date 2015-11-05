@@ -1,9 +1,8 @@
 {% extends "layout.html" %}
 
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/home.css">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="/static/home.js"></script>
     {% if cookie_exists('data') != True or valid_session(saves.get('session_id')) != True: %}
         <p>What does the W3C know?</p>
         <meta http-equiv="refresh" content="0; url={{ url_for('index') }}" />
@@ -24,7 +23,8 @@
                 {% if cookie_exists('data') and valid_session(saves.get('session_id')): %}
                     <form action="{{ url_for('newtweet') }}" method="POST">
                         <label for="content">New Tweet:</label>
-                        <input type="text" name="content" /><br />
+                        <input type="text" name="content" class="tweet_input_field"/>
+                        <br />
                         <button class="btn">Submit Tweet</button>
                     </form>
             </div>
