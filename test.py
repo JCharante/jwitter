@@ -142,7 +142,7 @@ def get_tweets(type, data):
     number_of_tweets = 0
     response = {}
     if type == "all":
-        for tweet in Tweet.query.all():
+        for tweet in Tweet.query.order_by(Tweet.id.desc()).all():
             response[number_of_tweets] = {'id': tweet.id,
                                             'tweeter': tweet.tweeter,
                                             'content': tweet.content,
@@ -151,6 +151,7 @@ def get_tweets(type, data):
                                             'time_created': tweet.time_created
                                             }
             number_of_tweets += 1
+        response = response
         return response
     elif type == "username":
         for tweet in Tweet.query.filter(Tweet.tweeter == data).all():
