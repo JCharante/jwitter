@@ -74,9 +74,11 @@ def valid_session(session_id):
                 print("Error getting session id")
                 return False
         except:
-            print("No such user exists")
-            print(session_id)
-            print(db_user_info("session_id", session_id).session_id)
+            try:
+                print(session_id)
+                print(db_user_info("session_id", session_id).session_id)
+            except:
+                print("No such user exists")
             return False
 
 
