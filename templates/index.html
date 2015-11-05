@@ -12,6 +12,7 @@
         <p>Your Session value is: {{ saves.get('session_id') }}</p>
     {% else: %}
         <p>Please log in.</p>
+        <iframe src="https://ghbtns.com/github-btn.html?user=JCharante&repo=jwitter&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px"></iframe>
     {% endif %}
     {% if cookie_exists('data') and valid_session(saves.get('session_id')): %}
         <p>You are logged in!</p>
