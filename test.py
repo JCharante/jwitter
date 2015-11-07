@@ -240,6 +240,7 @@ def newaccount():
     username = dict(request.form.items()).get('username', '')
     password = dict(request.form.items()).get('password', '')
     make_user(username, password)
+    response.set_cookie("data", json.dumps({"session_id": make_session(dict(request.form.items()))}))
     return response
 
 @app.route('/home')
