@@ -268,51 +268,57 @@ def newtweet():
 @app.route('/downvote/<int:id>')
 def downvote(id):
     data = get_saved_data("data")
-    tweeter = db_user_info("session_id", data.get('session_id')).username
-    # if the tweet is not already downvoted
-    if Downvote.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
-        print("{} downvoted tweet #{}".format(tweeter, id))
-        downvote_tweet(tweeter, id)
-        Tweet.query.filter_by(id=id).first().downvotes += 1
-        db.session.commit()
-        # If the tweet is not liked
-        if Like.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
-            print("{} not liked by {}".format(id, tweeter))
-        # If the tweet is liked
-        else:
-            Like.query.filter_by(tweeter=tweeter, tweet_id=id).delete()
-            Tweet.query.filter_by(id=id).first().likes -= 1
+    if valid_session(data.get('session_id')) is True:
+        tweeter = db_user_info("session_id", data.get('session_id')).username
+        # if the tweet is not already downvoted
+        if Downvote.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
+            print("{} downvoted tweet #{}".format(tweeter, id))
+            downvote_tweet(tweeter, id)
+            Tweet.query.filter_by(id=id).first().downvotes += 1
             db.session.commit()
-    # If the tweet is already downvoted
-    else:
-        print("Error, tweet already downvoted")
+            # If the tweet is not liked
+            if Like.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
+                print("{} not liked by {}".format(id, tweeter))
+            # If the tweet is liked
+            else:
+                Like.query.filter_by(tweeter=tweeter, tweet_id=id).delete()
+                Tweet.query.filter_by(id=id).first().likes -= 1
+                db.session.commit()
+        # If the tweet is already downvoted
+        else:
+            print("Error, tweet already downvoted")
 
-    return str(id)
+        return "{} Downvotes".format(Tweet.query.filter_by(id=id).first().downvotes)
+    else:
+        return make_response(redirect(url_for('index')))
 
 # When clicking on the number of likes on the home page, it will launch an ajax get command with the tweet's id.
 # This function gets the tweet with the id and increments the likes on it by 1.
 @app.route('/like/<int:id>')
 def like(id):
     data = get_saved_data("data")
-    tweeter = db_user_info("session_id", data.get('session_id')).username
-    # If the tweet is not liked
-    if Like.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
-        print("{} liked tweet #{}".format(tweeter, id))
-        like_tweet(tweeter, id)
-        Tweet.query.filter_by(id=id).first().likes += 1
-        db.session.commit()
-        # If the tweet is not downvoted
-        if Downvote.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
-            print("{} not downvoted by {}".format(id, tweeter))
-        # If the tweet is downvoted
-        else:
-            Downvote.query.filter_by(tweeter=tweeter, tweet_id=id).delete()
-            Tweet.query.filter_by(id=id).first().downvotes -= 1
+    if valid_session(data.get('session_id')) is True:
+        tweeter = db_user_info("session_id", data.get('session_id')).username
+        # If the tweet is not liked
+        if Like.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
+            print("{} liked tweet #{}".format(tweeter, id))
+            like_tweet(tweeter, id)
+            Tweet.query.filter_by(id=id).first().likes += 1
             db.session.commit()
-    # If the tweet is already liked
-    else:
-        print("Error, tweet already liked")
+            # If the tweet is not downvoted
+            if Downvote.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
+                print("{} not downvoted by {}".format(id, tweeter))
+            # If the tweet is downvoted
+            else:
+                Downvote.query.filter_by(tweeter=tweeter, tweet_id=id).delete()
+                Tweet.query.filter_by(id=id).first().downvotes -= 1
+                db.session.commit()
+        # If the tweet is already liked
+        else:
+            print("Error, tweet already liked")
 
-    return str(id)
+        return "{} Likes".format(Tweet.query.filter_by(id=id).first().likes)
+    else:
+        return make_response(redirect(url_for('index')))
 
 app.run(debug=True, host='0.0.0.0', port=8000)

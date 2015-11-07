@@ -8,7 +8,7 @@ function downvote() {
     $(document).on('click','#downvote',function(event){
         tweet_id = $(event.target).next().text();
         $.get( "http://localhost:8000/downvote/" +  tweet_id, function( data ) {
-          //alert( "Successfully downvoted tweet id: #" + data );
+            event.target.innerHTML = data;
         });
     });
 }
@@ -17,7 +17,7 @@ function upvote() {
     $(document).on('click','#like',function(event){
         tweet_id = $(event.target).next().next().text();
         $.get( "http://localhost:8000/like/" +  tweet_id, function( data ) {
-          //alert( "Successfully liked tweet id: #" + data );
+            event.target.innerHTML = data;
         });
     });
 }
