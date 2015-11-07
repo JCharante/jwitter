@@ -264,7 +264,8 @@ def newtweet():
 
 
 # When clicking on the number of downvotes on the home page, it will launch an ajax get command with the tweet's id.
-# This function gets the tweet with the id and increments the likes on it by -1.
+# This function gets the tweet with the id and increments the likes on it by -1
+# and then returns with the number of downvotes
 @app.route('/downvote/<int:id>')
 def downvote(id):
     data = get_saved_data("data")
@@ -293,7 +294,7 @@ def downvote(id):
         return make_response(redirect(url_for('index')))
 
 # When clicking on the number of likes on the home page, it will launch an ajax get command with the tweet's id.
-# This function gets the tweet with the id and increments the likes on it by 1.
+# This function gets the tweet with the id and increments the likes on it by 1 and then returns with the number of likes
 @app.route('/like/<int:id>')
 def like(id):
     data = get_saved_data("data")

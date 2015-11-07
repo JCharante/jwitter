@@ -24,9 +24,11 @@
                     <form action="{{ url_for('newtweet') }}" method="POST">
                         <label for="content">New Tweet:</label>
                         <input type="text" name="content" class="tweet_input_field"/>
-                        <br />
                         <button class="btn">Submit Tweet</button>
                     </form>
+            </div>
+            <div class="col-xs-12">
+                <button class="btn" id="log_out_button">Log Out.</button>
             </div>
         </div>
         <div class="col-xs-8">
