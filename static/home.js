@@ -8,7 +8,23 @@ function downvote() {
 }
 
 
-function upvote() {
+function delete_tweet() {
+    $(document).on('click','#delete',function(event) {
+        tweet_id = $(event.target).prev().text();
+        $.get( "http://localhost:8000/delete/" + tweet_id, function( data) {
+            function close1() {
+              $('.notification').slideUp('fast');
+            }
+            $(event.target).text("Tweet Deleted!");
+            $('.notification').text('Tweet Deleted!');
+            $('.notification').slideDown('fast');
+            window.setTimeout(close1,5000);
+        });
+    })
+}
+
+
+function like() {
     $(document).on('click','#like',function(event){
         tweet_id = $(event.target).next().next().text();
         $.get( "http://localhost:8000/like/" +  tweet_id, function( data ) {
@@ -48,8 +64,9 @@ function deleteCookies() {
 function main () {
     $(".tweet_input_field").focus();
     downvote();
-    upvote();
+    like();
     log_out_button();
+    delete_tweet();
 }
 
 $(document).ready(main);

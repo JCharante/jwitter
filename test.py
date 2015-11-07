@@ -229,11 +229,13 @@ def login():
     response.set_cookie("data", json.dumps({"session_id": make_session(dict(request.form.items()))}))
     return response
 
+
 @app.route('/register')
 def register():
     return render_template('register.html')
 
 
+# /register has a button that submits the form information to here.
 @app.route('/newaccount', methods=['POST'])
 def newaccount():
     response = make_response(redirect(url_for('index')))
@@ -322,5 +324,17 @@ def like(id):
         return "{} Likes".format(Tweet.query.filter_by(id=id).first().likes)
     else:
         return make_response(redirect(url_for('index')))
+
+
+@app.route('/delete/<int:id>')
+def delete(id):
+    data = get_saved_data("data")
+    if valid_session(data.get('session_id')) is True:
+        tweeter = db_user_info("session_id", data.get('session_id'))
+        if tweeter == Tweet.query.filter_by(id=id).first().username:
+            Tweet.query.filter_by(id=id).delete()
+            db.session.commit()
+            return "Tweet Deleted"
+
 
 app.run(debug=True, host='0.0.0.0', port=8000)
