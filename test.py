@@ -46,6 +46,30 @@ class Tweet(db.Model):
     def __repr__(self):
         return '<Tweet %i>' % self.id
 
+class Like(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tweeter = db.Column(db.String(80))
+    tweet_id = db.Column(db.Integer)
+
+    def __init__(self, tweeter, tweet_id):
+        self.tweeter = tweeter
+        self.tweet_id = tweet_id
+
+    def __repr__(self):
+        return '<Like %i>' % self.id
+
+class Downvote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tweeter = db.Column(db.String(80))
+    tweet_id = db.Column(db.Integer)
+
+    def __init__(self, tweeter, tweet_id):
+        self.tweeter = tweeter
+        self.tweet_id = tweet_id
+
+    def __repr__(self):
+        return '<Downvote %i>' % self.id
+
 # Returns true if session is valid, returns false if not
 # It checks if the session_id is in the database, and then checks the last time it was activated
 # If activated more than 20 minutes ago, it'll return False.
@@ -86,6 +110,18 @@ def make_user(username, password):
             return "Error creating User"
     else:
         return "Username taken"
+
+
+def like_tweet(tweeter, tweet_id):
+    db.session.add(Like(tweeter, tweet_id))
+    db.session.commit()
+    return "Successfully added tweet like to the database"
+
+
+def downvote_tweet(tweeter, tweet_id):
+    db.session.add(Downvote(tweeter, tweet_id))
+    db.session.commit()
+    return "Successfully added tweet downvote to the database"
 
 # Adds tweets to the database.
 # Gets the username from the session_id
@@ -231,16 +267,52 @@ def newtweet():
 # This function gets the tweet with the id and increments the likes on it by -1.
 @app.route('/downvote/<int:id>')
 def downvote(id):
-    Tweet.query.filter_by(id=id).first().downvotes -= 1
-    db.session.commit()
+    data = get_saved_data("data")
+    tweeter = db_user_info("session_id", data.get('session_id')).username
+    # if the tweet is not already downvoted
+    if Downvote.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
+        print("{} downvoted tweet #{}".format(tweeter, id))
+        downvote_tweet(tweeter, id)
+        Tweet.query.filter_by(id=id).first().downvotes += 1
+        db.session.commit()
+        # If the tweet is not liked
+        if Like.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
+            print("{} not liked by {}".format(id, tweeter))
+        # If the tweet is liked
+        else:
+            Like.query.filter_by(tweeter=tweeter, tweet_id=id).delete()
+            Tweet.query.filter_by(id=id).first().likes -= 1
+            db.session.commit()
+    # If the tweet is already downvoted
+    else:
+        print("Error, tweet already downvoted")
+
     return str(id)
 
 # When clicking on the number of likes on the home page, it will launch an ajax get command with the tweet's id.
 # This function gets the tweet with the id and increments the likes on it by 1.
 @app.route('/like/<int:id>')
 def like(id):
-    Tweet.query.filter_by(id=id).first().likes += 1
-    db.session.commit()
+    data = get_saved_data("data")
+    tweeter = db_user_info("session_id", data.get('session_id')).username
+    # If the tweet is not liked
+    if Like.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
+        print("{} liked tweet #{}".format(tweeter, id))
+        like_tweet(tweeter, id)
+        Tweet.query.filter_by(id=id).first().likes += 1
+        db.session.commit()
+        # If the tweet is not downvoted
+        if Downvote.query.filter_by(tweeter=tweeter, tweet_id=id).first() is None:
+            print("{} not downvoted by {}".format(id, tweeter))
+        # If the tweet is downvoted
+        else:
+            Downvote.query.filter_by(tweeter=tweeter, tweet_id=id).delete()
+            Tweet.query.filter_by(id=id).first().downvotes -= 1
+            db.session.commit()
+    # If the tweet is already liked
+    else:
+        print("Error, tweet already liked")
+
     return str(id)
 
 app.run(debug=True, host='0.0.0.0', port=8000)
