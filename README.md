@@ -14,3 +14,4 @@ A twitter clone written in Python w/ Flask
 # Known Issues
 * Currently all usernames/passwords stored in the User table in the database are stored in plaintext
 * Users can upvote/downvote a tweet as many times as they want
+* Currently redirecting users with the meta tag, which is not recommended.  
