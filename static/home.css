@@ -6,3 +6,15 @@
 .line_break {
     visibility: hidden;
 }
+
+#like {
+    color: green;
+}
+
+#downvote {
+    color: red;
+}
+
+#id {
+    visibility: hidden;
+}

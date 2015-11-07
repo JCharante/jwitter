@@ -35,7 +35,6 @@ class Tweet(db.Model):
     likes = db.Column(db.Integer)
     downvotes = db.Column(db.Integer)
     time_created = db.Column(db.String(100))
-    #diction = db.Column(db.String(1000))
 
     def __init__(self, tweeter, content, likes, downvotes, time_created):
         self.tweeter = tweeter
@@ -43,18 +42,13 @@ class Tweet(db.Model):
         self.likes = likes
         self.downvotes = downvotes
         self.time_created = time_created
-        """self.diction = json.dumps({'id': self.id,
-                    'tweeter': self.tweeter,
-                    'content': self.content,
-                    'likes': self.likes,
-                    'downvotes': self.downvotes,
-                    'time_created': self.time_created
-                    })"""
 
     def __repr__(self):
         return '<Tweet %i>' % self.id
 
-
+# Returns true if session is valid, returns false if not
+# It checks if the session_id is in the database, and then checks the last time it was activated
+# If activated more than 20 minutes ago, it'll return False.
 def valid_session(session_id):
     if session_id == "invalid":
         return False
@@ -93,12 +87,15 @@ def make_user(username, password):
     else:
         return "Username taken"
 
+# Adds tweets to the database.
+# Gets the username from the session_id
 def make_tweet(session_id, content):
     db.session.add(Tweet(db_user_info("session_id", session_id).username, content, 0, 0, str(datetime.utcnow())))
     db.session.commit()
     return "Successfully made a tweet"
 
-
+# Returns the session_id from the database to be put into a dict in the user's cookies if the
+# username/password combination is right. If they're wrong it returns invalid.
 def make_session(form_data):
     try:
         if db_user_info("username", form_data.get('username', '')).password == form_data.get('password'):
@@ -139,7 +136,23 @@ def cookie_exists(cookie_name):
     else:
         return False
 
-
+# Returns with a dictionary containing dictionaries with information about the tweets in the following format
+""" {
+    tweet_1: {
+        'id': 123,
+        'content': 'lorem ipsum',
+        'likes': 0,
+        'downvotes': 0,
+        'time_created': time the tweet was created in the datetime.datetime.utcnow() format
+    },
+    tweet_2: {
+        'id': 123,
+        'content': 'lorem ipsum',
+        'likes': 0,
+        'downvotes': 0,
+        'time_created': time the tweet was created in the datetime.datetime.utcnow() format
+    },
+"""
 def get_tweets(type, data):
     number_of_tweets = 0
     response = {}
@@ -167,17 +180,6 @@ def get_tweets(type, data):
             number_of_tweets += 1
         return response
 
-#print(get_tweets("username", Tweet.query.filter(Tweet.tweeter == 'cows').first().tweeter))
-
-"""
-for tweet in get_tweets("username", "cows").items():
-    #print("%i %s %s %i %i %s" % (tweet))
-    print(tweet[1].get('content'))
-"""
-"""
-for tweet in get_tweets("all", "nothing").items():
-    print(tweet[1].get('content'))
-"""
 
 @app.route('/')
 def index():
@@ -215,12 +217,30 @@ def home():
             get_tweets=lambda x,y: get_tweets(x, y)
     )
 
-
+# On the home page, submitted a new tweet will send a post request to this function.
+# This function uses the make_tweet function to add a new tweet
 @app.route('/newtweet', methods=['POST'])
 def newtweet():
     response = make_response(redirect(url_for('home')))
     data = get_saved_data("data")
     make_tweet(data.get('session_id'), dict(request.form.items()).get('content', ''))
     return response
+
+
+# When clicking on the number of downvotes on the home page, it will launch an ajax get command with the tweet's id.
+# This function gets the tweet with the id and increments the likes on it by -1.
+@app.route('/downvote/<int:id>')
+def downvote(id):
+    Tweet.query.filter_by(id=id).first().downvotes -= 1
+    db.session.commit()
+    return str(id)
+
+# When clicking on the number of likes on the home page, it will launch an ajax get command with the tweet's id.
+# This function gets the tweet with the id and increments the likes on it by 1.
+@app.route('/like/<int:id>')
+def like(id):
+    Tweet.query.filter_by(id=id).first().likes += 1
+    db.session.commit()
+    return str(id)
 
 app.run(debug=True, host='0.0.0.0', port=8000)
