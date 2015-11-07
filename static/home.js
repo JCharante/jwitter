@@ -18,7 +18,10 @@ function delete_tweet() {
             $(event.target).text("Tweet Deleted!");
             $('.notification').text('Tweet Deleted!');
             $('.notification').slideDown('fast');
-            window.setTimeout(close1,5000);
+            $(event.target).parent().parent().parent().fadeOut("slow", function() {
+                $(event.target).parent().parent().parent().remove();
+            });
+            window.setTimeout(close1,3000);
         });
     })
 }

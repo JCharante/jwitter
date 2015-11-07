@@ -331,10 +331,16 @@ def delete(id):
     data = get_saved_data("data")
     if valid_session(data.get('session_id')) is True:
         tweeter = db_user_info("session_id", data.get('session_id'))
-        if tweeter == Tweet.query.filter_by(id=id).first().username:
+        if tweeter.username == Tweet.query.filter_by(id=id).first().tweeter:
             Tweet.query.filter_by(id=id).delete()
+            Like.query.filter_by(tweet_id=id).delete()
+            Downvote.query.filter_by(tweet_id=id).delete()
             db.session.commit()
             return "Tweet Deleted"
+        else:
+            return "You do not have auth. to delete this tweet!"
+    else:
+        return "Invalid session!"
 
 
 app.run(debug=True, host='0.0.0.0', port=8000)
