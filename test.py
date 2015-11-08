@@ -5,7 +5,6 @@ import re
 import uuid
 import json
 
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = SQLAlchemy(app)
@@ -46,6 +45,7 @@ class Tweet(db.Model):
     def __repr__(self):
         return '<Tweet %i>' % self.id
 
+
 class Like(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tweeter = db.Column(db.String(80))
@@ -57,6 +57,7 @@ class Like(db.Model):
 
     def __repr__(self):
         return '<Like %i>' % self.id
+
 
 class Downvote(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -70,6 +71,20 @@ class Downvote(db.Model):
     def __repr__(self):
         return '<Downvote %i>' % self.id
 
+
+class Follow(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    follower = db.Column(db.String(80))
+    followed = db.Column(db.String(80))
+
+    def __init__(self, follower, followed):
+        self.follower = follower
+        self.followed = followed
+
+    def __repr__(self):
+        return '<%s follows %s>' % (self.follower, self.followed)
+
+
 # Returns true if session is valid, returns false if not
 # It checks if the session_id is in the database, and then checks the last time it was activated
 # If activated more than 20 minutes ago, it'll return False.
@@ -79,14 +94,15 @@ def valid_session(session_id):
     else:
         try:
             if db_user_info("session_id", session_id).session_id == session_id:
-                original_time = datetime.strptime(db_user_info("session_id", session_id).session_time, "%Y-%m-%d %H:%M:%S.%f")
+                original_time = datetime.strptime(db_user_info("session_id", session_id).session_time,
+                                                  "%Y-%m-%d %H:%M:%S.%f")
                 right_now = datetime.strptime(str(datetime.utcnow()), "%Y-%m-%d %H:%M:%S.%f")
 
                 if original_time < right_now + timedelta(minutes=-20):
-                    #print("Session too old. Last login was {} and it is now {}".format(original_time, right_now))
+                    # print("Session too old. Last login was {} and it is now {}".format(original_time, right_now))
                     return False
                 else:
-                    #print("Session not too old. Last login was {} and it is now {}".format(original_time, right_now))
+                    # print("Session not too old. Last login was {} and it is now {}".format(original_time, right_now))
                     return True
             else:
                 print("Error getting session id")
@@ -101,7 +117,7 @@ def valid_session(session_id):
 
 
 def make_user(username, password):
-    if User.query.filter_by(username=username,password=password).first() is None:
+    if User.query.filter_by(username=username, password=password).first() is None:
         try:
             db.session.add(User(username, password, str(uuid.uuid4()), str(datetime.utcnow())))
             db.session.commit()
@@ -118,10 +134,33 @@ def like_tweet(tweeter, tweet_id):
     return "Successfully added tweet like to the database"
 
 
+def new_follower(follower, followed):
+    db.session.add(Follow(follower, followed))
+    db.session.commit()
+    return "Successfully followed person!"
+
+
+def un_follow(follower, followed):
+    Follow.query.filter_by(follower=follower, followed=followed).delete()
+    db.session.commit()
+    return "Successfully unfollowed"
+
+
+def check_if_followed(follower, followed):
+    try:
+        if Follow.query.filter_by(follower=follower, followed=followed).first() is None:
+            return False
+        else:
+            return True
+    except:
+        return False
+
+
 def downvote_tweet(tweeter, tweet_id):
     db.session.add(Downvote(tweeter, tweet_id))
     db.session.commit()
     return "Successfully added tweet downvote to the database"
+
 
 # Adds tweets to the database.
 # Gets the username from the session_id
@@ -137,10 +176,10 @@ def make_session(form_data):
     try:
         if db_user_info("username", form_data.get('username', '')).password == form_data.get('password'):
             user = User.query.filter_by(username=form_data.get('username', '')).first()
-            #print("{}'s password is {} and has a session id of {}. Their session time is {}".format(user.username, user.password, user.session_id, user.session_time))
+            # print("{}'s password is {} and has a session id of {}. Their session time is {}".format(user.username, user.password, user.session_id, user.session_time))
             user.session_time = str(datetime.utcnow())
             db.session.commit()
-            #print("{}'s password is {} and has a session id of {}. Their session time is {}".format(user.username, user.password, user.session_id, user.session_time))
+            # print("{}'s password is {} and has a session id of {}. Their session time is {}".format(user.username, user.password, user.session_id, user.session_time))
             return db_user_info("username", form_data.get('username')).session_id
         else:
             return "invalid"
@@ -153,10 +192,10 @@ def make_session(form_data):
 # Used for getting data, not for updating data
 def db_user_info(type, data):
     if type == "username":
-        #return json.loads(str(User.query.filter_by(username=data).first()))
+        # return json.loads(str(User.query.filter_by(username=data).first()))
         return User.query.filter_by(username=data).first()
     elif type == "session_id":
-        #return json.loads(str(User.query.filter_by(session_id=data).first()))
+        # return json.loads(str(User.query.filter_by(session_id=data).first()))
         return User.query.filter_by(session_id=data).first()
 
 
@@ -172,6 +211,7 @@ def cookie_exists(cookie_name):
         return True
     else:
         return False
+
 
 # Returns with a dictionary containing dictionaries with information about the tweets in the following format
 """ {
@@ -190,30 +230,32 @@ def cookie_exists(cookie_name):
         'time_created': time the tweet was created in the datetime.datetime.utcnow() format
     },
 """
+
+
 def get_tweets(type, data):
     number_of_tweets = 0
     response = {}
     if type == "all":
         for tweet in Tweet.query.order_by(Tweet.id.desc()).all():
             response[number_of_tweets] = {'id': tweet.id,
-                                            'tweeter': tweet.tweeter,
-                                            'content': tweet.content,
-                                            'likes': tweet.likes,
-                                            'downvotes': tweet.downvotes,
-                                            'time_created': tweet.time_created
-                                            }
+                                          'tweeter': tweet.tweeter,
+                                          'content': tweet.content,
+                                          'likes': tweet.likes,
+                                          'downvotes': tweet.downvotes,
+                                          'time_created': tweet.time_created
+                                          }
             number_of_tweets += 1
         response = response
         return response
     elif type == "username":
         for tweet in Tweet.query.filter(Tweet.tweeter == data).all():
             response[number_of_tweets] = {'id': tweet.id,
-                                            'tweeter': tweet.tweeter,
-                                            'content': tweet.content,
-                                            'likes': tweet.likes,
-                                            'downvotes': tweet.downvotes,
-                                            'time_created': tweet.time_created
-                                            }
+                                          'tweeter': tweet.tweeter,
+                                          'content': tweet.content,
+                                          'likes': tweet.likes,
+                                          'downvotes': tweet.downvotes,
+                                          'time_created': tweet.time_created
+                                          }
             number_of_tweets += 1
         return response
 
@@ -223,10 +265,14 @@ def retweet_tweet(tweet_id, tweeter):
     make_tweet(tweeter, original_tweet.content)
     return "Retweeted!"
 
+
+# print(Tweet.query.filter((Tweet.tweeter.in_(["thebest"]))).first().content)
+
 @app.route('/')
 def index():
     data = get_saved_data("data")
-    return render_template('index.html', saves=data, cookie_exists=lambda x: cookie_exists(x), valid_session=lambda x: valid_session(x))
+    return render_template('index.html', saves=data, cookie_exists=lambda x: cookie_exists(x),
+                           valid_session=lambda x: valid_session(x))
 
 
 @app.route('/login', methods=['POST'])
@@ -251,16 +297,19 @@ def newaccount():
     response.set_cookie("data", json.dumps({"session_id": make_session(dict(request.form.items()))}))
     return response
 
+
 @app.route('/home')
 def home():
     data = get_saved_data("data")
     return render_template('home.html',
-            saves=data,
-            cookie_exists=lambda x: cookie_exists(x),
-            valid_session=lambda x: valid_session(x),
-            db_user_info=lambda x,y: db_user_info(x, y),
-            get_tweets=lambda x,y: get_tweets(x, y)
-    )
+                           saves=data,
+                           cookie_exists=lambda x: cookie_exists(x),
+                           valid_session=lambda x: valid_session(x),
+                           db_user_info=lambda x, y: db_user_info(x, y),
+                           get_tweets=lambda x, y: get_tweets(x, y),
+                           check_if_followed=lambda x, y: check_if_followed(x, y)
+                           )
+
 
 # On the home page, submitted a new tweet will send a post request to this function.
 # This function uses the make_tweet function to add a new tweet
@@ -303,6 +352,7 @@ def downvote(id):
     else:
         return make_response(redirect(url_for('index')))
 
+
 # When clicking on the number of likes on the home page, it will launch an ajax get command with the tweet's id.
 # This function gets the tweet with the id and increments the likes on it by 1 and then returns with the number of likes
 @app.route('/like/<int:id>')
@@ -329,6 +379,22 @@ def like(id):
             print("Error, tweet already liked")
 
         return "{} Likes".format(Tweet.query.filter_by(id=id).first().likes)
+    else:
+        return make_response(redirect(url_for('index')))
+
+
+@app.route('/follow/<int:followed_tweet_id>')
+def follow(followed_tweet_id):
+    data = get_saved_data("data")
+    if valid_session(data.get('session_id')) is True:
+        follower = db_user_info("session_id", data.get('session_id')).username
+        followed = Tweet.query.filter_by(id=followed_tweet_id).first().tweeter
+        if check_if_followed(follower, followed) is True:
+            un_follow(follower, followed)
+            return "Follow"
+        else:
+            new_follower(follower, followed)
+            return "Unfollow"
     else:
         return make_response(redirect(url_for('index')))
 

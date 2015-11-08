@@ -17,6 +17,16 @@ function retweet() {
 }
 
 
+function follow() {
+    $(document).on('click', '#follow', function(event) {
+        tweet_id = $(event.target).parent().next().children('#id').text();
+        $.get( "http://localhost:8000/follow/" + tweet_id, function(data) {
+            $(event.target).text(data);
+        });
+    });
+}
+
+
 function delete_tweet() {
     $(document).on('click','#delete',function(event) {
         tweet_id = $(event.target).parent().prev().children("#id").text();
@@ -80,6 +90,7 @@ function main () {
     log_out_button();
     delete_tweet();
     retweet();
+    follow();
 }
 
 $(document).ready(main);
