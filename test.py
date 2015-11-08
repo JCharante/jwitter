@@ -258,6 +258,20 @@ def get_tweets(type, data):
                                           }
             number_of_tweets += 1
         return response
+    elif type == "follower_feed":
+        followed_people = []
+        for row in Follow.query.filter_by(follower=data).all():
+            followed_people.append(row.followed)
+        for tweet in Tweet.query.order_by(Tweet.id.desc()).filter((Tweet.tweeter.in_(followed_people))).all():
+            response[number_of_tweets] = {'id': tweet.id,
+                                          'tweeter': tweet.tweeter,
+                                          'content': tweet.content,
+                                          'likes': tweet.likes,
+                                          'downvotes': tweet.downvotes,
+                                          'time_created': tweet.time_created
+                                          }
+            number_of_tweets += 1
+        return response
 
 
 def retweet_tweet(tweet_id, tweeter):
