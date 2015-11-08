@@ -10,6 +10,7 @@ A twitter clone written in Python w/ Flask
 * Creating and logging into account
 * Creating new tweets
 * Users can upvote/downvote tweets (Once per tweet per user)
+* Retweeting Tweets
 
 
 # Known Issues

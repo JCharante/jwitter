@@ -44,9 +44,13 @@
                                 <span id="like">{{ tweet[1].get('likes') }} Likes </span> |
                                 <span id="downvote">{{ tweet[1].get('downvotes') }} Downvotes</span>
                                 <span id="id">{{ tweet[1].get('id') }}</span>
-                                {% if tweet[1].get('tweeter') == db_user_info("session_id",saves.get('session_id')).username: %}
-                                    | <span id="delete">Delete Tweet</span>
-                                {% endif %}
+                            </h5>
+                            <h5>
+                            {% if tweet[1].get('tweeter') == db_user_info("session_id",saves.get('session_id')).username: %}
+                                <span id="delete">Delete Tweet</span>
+                            {% else: %}
+                                <span id="retweet">Retweet</span>
+                            {% endif %}
                             </h5>
                         </div>
                     </div>

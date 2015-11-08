@@ -7,10 +7,19 @@ function downvote() {
     });
 }
 
+function retweet() {
+    $(document).on('click','#retweet',function(event) {
+        tweet_id = $(event.target).parent().prev().children('#id').text();
+        $.get( "http://localhost:8000/retweet/" + tweet_id, function( data) {
+            $(event.target).text(data);
+        });
+    });
+}
+
 
 function delete_tweet() {
     $(document).on('click','#delete',function(event) {
-        tweet_id = $(event.target).prev().text();
+        tweet_id = $(event.target).parent().prev().children("#id").text();
         $.get( "http://localhost:8000/delete/" + tweet_id, function( data) {
             function close1() {
               $('.notification').slideUp('fast');
@@ -70,6 +79,7 @@ function main () {
     like();
     log_out_button();
     delete_tweet();
+    retweet();
 }
 
 $(document).ready(main);

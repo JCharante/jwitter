@@ -125,10 +125,11 @@ def downvote_tweet(tweeter, tweet_id):
 
 # Adds tweets to the database.
 # Gets the username from the session_id
-def make_tweet(session_id, content):
-    db.session.add(Tweet(db_user_info("session_id", session_id).username, content, 0, 0, str(datetime.utcnow())))
+def make_tweet(tweeter, content):
+    db.session.add(Tweet(tweeter, content, 0, 0, str(datetime.utcnow())))
     db.session.commit()
     return "Successfully made a tweet"
+
 
 # Returns the session_id from the database to be put into a dict in the user's cookies if the
 # username/password combination is right. If they're wrong it returns invalid.
@@ -217,6 +218,11 @@ def get_tweets(type, data):
         return response
 
 
+def retweet_tweet(tweet_id, tweeter):
+    original_tweet = Tweet.query.filter_by(id=tweet_id).first()
+    make_tweet(tweeter, original_tweet.content)
+    return "Retweeted!"
+
 @app.route('/')
 def index():
     data = get_saved_data("data")
@@ -262,7 +268,8 @@ def home():
 def newtweet():
     response = make_response(redirect(url_for('home')))
     data = get_saved_data("data")
-    make_tweet(data.get('session_id'), dict(request.form.items()).get('content', ''))
+    tweeter = db_user_info("session_id", data.get('session_id')).username
+    make_tweet(tweeter, dict(request.form.items()).get('content', ''))
     return response
 
 
@@ -331,16 +338,33 @@ def delete(id):
     data = get_saved_data("data")
     if valid_session(data.get('session_id')) is True:
         tweeter = db_user_info("session_id", data.get('session_id'))
-        if tweeter.username == Tweet.query.filter_by(id=id).first().tweeter:
-            Tweet.query.filter_by(id=id).delete()
-            Like.query.filter_by(tweet_id=id).delete()
-            Downvote.query.filter_by(tweet_id=id).delete()
-            db.session.commit()
-            return "Tweet Deleted"
-        else:
-            return "You do not have auth. to delete this tweet!"
+        try:
+            if tweeter.username == Tweet.query.filter_by(id=id).first().tweeter:
+                Tweet.query.filter_by(id=id).delete()
+                Like.query.filter_by(tweet_id=id).delete()
+                Downvote.query.filter_by(tweet_id=id).delete()
+                db.session.commit()
+                return "Tweet Deleted"
+            else:
+                return "You do not have auth. to delete this tweet!"
+        except:
+            return "Tweet not found"
     else:
         return "Invalid session!"
+
+
+@app.route('/retweet/<int:id>')
+def retweet(id):
+    data = get_saved_data("data")
+    if valid_session(data.get('session_id')) is True:
+        if db_user_info("session_id", data.get('session_id')).username != Tweet.query.filter_by(id=id).first().tweeter:
+            tweeter = db_user_info("session_id", data.get('session_id'))
+            retweet_tweet(id, tweeter.username)
+            return "Retweeted!"
+        else:
+            return "You can't retweet your own tweet!"
+    else:
+        return "Invalid Session!"
 
 
 app.run(debug=True, host='0.0.0.0', port=8000)
