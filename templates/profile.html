@@ -36,45 +36,12 @@
         </div>
         <div class="col-xs-4">
             {% if cookie_exists('data') and valid_session(saves.get('session_id')): %}
-            <h1>Your Feed:</h1>
-            {% for tweet in get_tweets("follower_feed", db_user_info("session_id",saves.get('session_id')).username).items(): %}
+            <h1>{{ username }}'s Tweets:</h1>
+            {% for tweet in get_tweets("username", username).items(): %}
                 <div class="tweet_wrapper">
                     <div class="a_tweet">
                         <h3>{{ tweet[1].get('content') }}</h3>
-                        <h4>
-                            <a href="{{ 'http://localhost:8000/profile/' + tweet[1].get('tweeter') }}">@{{ tweet[1].get('tweeter') }}</a> |
-                            {% if check_if_followed(db_user_info("session_id", saves.get('session_id')).username, tweet[1].get('tweeter')) == True: %}
-                            <span id="follow">Unfollow</span>
-                            {% else: %}
-                            <span id="follow">Follow</span>
-                            {% endif %}
-                        </h4>
-                        <h5>On {{ tweet[1].get('time_created') }} |
-                            <span id="like">{{ tweet[1].get('likes') }} Likes </span> |
-                            <span id="downvote">{{ tweet[1].get('downvotes') }} Downvotes</span>
-                            <span id="id">{{ tweet[1].get('id') }}</span>
-                        </h5>
-                        <h5>
-                        {% if tweet[1].get('tweeter') == db_user_info("session_id",saves.get('session_id')).username: %}
-                            <span id="delete">Delete Tweet</span>
-                        {% else: %}
-                            <span id="retweet">Retweet</span>
-                        {% endif %}
-                        </h5>
-                    </div>
-                </div>
-            {% endfor %}
-            {% endif %}
-        </div>
-        <div class="col-xs-4">
-            {% if cookie_exists('data') and valid_session(saves.get('session_id')): %}
-            <h1>Recent Tweets:</h1>
-            {% for tweet in get_tweets("all", "nothing").items(): %}
-                <div class="tweet_wrapper">
-                    <div class="a_tweet">
-                        <h3>{{ tweet[1].get('content') }}</h3>
-                        <h4>
-                            <a href="{{ 'http://localhost:8000/profile/' + tweet[1].get('tweeter') }}">@{{ tweet[1].get('tweeter') }}</a> |
+                        <h4><a href="{{ 'http://localhost:8000/profile/' + tweet[1].get('tweeter') }}">@{{ tweet[1].get('tweeter') }}</a> |
                             {% if check_if_followed(db_user_info("session_id", saves.get('session_id')).username, tweet[1].get('tweeter')) == True: %}
                             <span id="follow">Unfollow</span>
                             {% else: %}

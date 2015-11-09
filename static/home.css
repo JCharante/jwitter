@@ -2,6 +2,10 @@
     visibility: hidden;
 }
 
+body {
+    background-color: #E0FFFF;
+}
+
 #like {
     color: green;
 }

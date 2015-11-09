@@ -12,7 +12,8 @@ A twitter clone written in Python w/ Flask
 * Users can upvote/downvote tweets (Once per tweet per user)
 * Retweeting Tweets
 * Follow/Unfollow System
-* Follower Feed
+* Follower 
+* User Profiles
 
 
 # Known Issues

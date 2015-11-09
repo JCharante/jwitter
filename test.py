@@ -248,7 +248,7 @@ def get_tweets(type, data):
         response = response
         return response
     elif type == "username":
-        for tweet in Tweet.query.filter(Tweet.tweeter == data).all():
+        for tweet in Tweet.query.order_by(Tweet.id.desc()).filter(Tweet.tweeter == data).all():
             response[number_of_tweets] = {'id': tweet.id,
                                           'tweeter': tweet.tweeter,
                                           'content': tweet.content,
@@ -445,6 +445,23 @@ def retweet(id):
             return "You can't retweet your own tweet!"
     else:
         return "Invalid Session!"
+
+
+@app.route('/profile/<username>')
+def user_profile(username):
+    data = get_saved_data("data")
+    if valid_session(data.get('session_id')) is True:
+        return render_template('profile.html',
+                               saves=data,
+                               cookie_exists=lambda x: cookie_exists(x),
+                               valid_session=lambda x: valid_session(x),
+                               db_user_info=lambda x, y: db_user_info(x, y),
+                               get_tweets=lambda x, y: get_tweets(x, y),
+                               check_if_followed=lambda x, y: check_if_followed(x, y),
+                               username=username
+                               )
+    else:
+        return make_response(redirect(url_for('index')))
 
 
 app.run(debug=True, host='0.0.0.0', port=8000)
