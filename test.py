@@ -463,5 +463,15 @@ def user_profile(username):
     else:
         return make_response(redirect(url_for('index')))
 
+# Wipes the DB
+@app.route('/hiroshima')
+def hiroshima():
+    Tweet.query.delete()
+    Like.query.delete()
+    User.query.delete()
+    Downvote.query.delete()
+    Follow.query.delete()
+    db.session.commit()
+    return "database got rekt"
 
 app.run(debug=True, host='0.0.0.0', port=8000)
