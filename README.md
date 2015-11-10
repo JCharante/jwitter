@@ -14,6 +14,7 @@ A twitter clone written in Python w/ Flask
 * Follow/Unfollow System
 * Follower 
 * User Profiles
+* Wipe the database by going to http://websiteurl.com/hiroshima
 
 
 # Known Issues
