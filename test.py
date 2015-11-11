@@ -1,7 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, make_response
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
-import re
 import uuid
 import json
 
@@ -165,6 +164,9 @@ def downvote_tweet(tweeter, tweet_id):
 # Adds tweets to the database.
 # Gets the username from the session_id
 def make_tweet(tweeter, content):
+    # Hash-tags have a link added to them here, less and equal signs are replaced with nonfunctional <> signs
+    # To protect from having dangerous javascript scripts in a tweet work and to stop images.
+    content = tweet_content_sanitizer(content)
     db.session.add(Tweet(tweeter, content, 0, 0, str(datetime.utcnow())))
     db.session.commit()
     return "Successfully made a tweet"
@@ -280,7 +282,23 @@ def retweet_tweet(tweet_id, tweeter):
     return "Retweeted!"
 
 
-# print(Tweet.query.filter((Tweet.tweeter.in_(["thebest"]))).first().content)
+def tweet_content_sanitizer(value):
+    value = value.replace('<', '&lt;')
+    value = value.replace('>', '&gt;')
+    list_of_words = value.split(" ")
+    for word_index in range(0, len(list_of_words)):
+        try:
+            if list_of_words[word_index][0] == '#' and len(list_of_words[word_index]) > 1:
+                try:
+                    list_of_words[word_index] = '<a href="http://placekitten.com">' + list_of_words[word_index] + '</a>'
+                except:
+                    print("")
+        except:
+            print("")
+    response = ""
+    for word in list_of_words:
+        response += word + ' '
+    return response
 
 @app.route('/')
 def index():
@@ -473,5 +491,6 @@ def hiroshima():
     Follow.query.delete()
     db.session.commit()
     return "database got rekt"
+
 
 app.run(debug=True, host='0.0.0.0', port=8000)

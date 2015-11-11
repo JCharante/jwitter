@@ -43,7 +43,7 @@
             {% for tweet in get_tweets("username", username).items(): %}
                 <div class="tweet_wrapper">
                     <div class="a_tweet">
-                        <h3>{{ tweet[1].get('content') }}</h3>
+                        <h3>{{ tweet[1].get('content')| safe }}</h3>
                         <h4><a href="{{ 'http://localhost:8000/profile/' + tweet[1].get('tweeter') }}">@{{ tweet[1].get('tweeter') }}</a> |
                             {% if check_if_followed(db_user_info("session_id", saves.get('session_id')).username, tweet[1].get('tweeter')) == True: %}
                             <span id="follow">Unfollow</span>
