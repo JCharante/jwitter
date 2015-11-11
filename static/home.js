@@ -83,6 +83,27 @@ function deleteCookies() {
 }
 
 
+function youtube_video () {
+    $(document).on('click','.youtube-link',function(event) {
+        var video_link = $(event.target).prev().text();
+        var modified_video_link = video_link.replace("youtu.be/", "youtube.com/embed/");
+        bootbox.dialog({
+            title: "Watch Video",
+            message: '<iframe width="560" height="315" src="' + modified_video_link + '" frameborder="0" allowfullscreen></iframe>'
+        });
+    })
+}
+
+function picture_link () {
+    $(document).on('click','.picture-link',function(event) {
+        var picture_link = $(event.target).prev().text();
+        bootbox.dialog({
+            title: "View Image",
+            message: '<img width="550px" height="auto" src="' + picture_link + '"></img>'
+        });
+    })
+}
+
 function main () {
     $(".tweet_input_field").focus();
     downvote();
@@ -91,6 +112,8 @@ function main () {
     delete_tweet();
     retweet();
     follow();
+    youtube_video();
+    picture_link();
 }
 
 $(document).ready(main);

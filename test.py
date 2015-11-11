@@ -286,15 +286,33 @@ def tweet_content_sanitizer(value):
     value = value.replace('<', '&lt;')
     value = value.replace('>', '&gt;')
     list_of_words = value.split(" ")
-    for word_index in range(0, len(list_of_words)):
+    image_extensions = ['.jpg', '.png', '.gif', '.svg']
+    for wrdx in range(0, len(list_of_words)):
         try:
-            if list_of_words[word_index][0] == '#' and len(list_of_words[word_index]) > 1:
-                try:
-                    list_of_words[word_index] = '<a href="http://placekitten.com">' + list_of_words[word_index] + '</a>'
-                except:
-                    print("")
+            word_length = len(list_of_words[wrdx])
+            # If it's a hashtag
+            if list_of_words[wrdx][0] == '#' and word_length > 1:
+                list_of_words[wrdx] = '<a href="http://placekitten.com">' + list_of_words[wrdx] + '</a>'
+            # If it's a youtube link
+            elif list_of_words[wrdx][0:17] == "https://youtu.be/" and word_length > 18:
+                list_of_words[wrdx] = '<a href="' + list_of_words[wrdx] + '">' + \
+                                            list_of_words[wrdx] + '</a>' + \
+                                            '<button class="youtube-link">Watch Video</button>'
+            # If it's a picture
+            elif list_of_words[wrdx][word_length - 4] == ".":
+                for image_extension in image_extensions:
+                    extension_length = len(image_extension)
+                    if list_of_words[wrdx][word_length - extension_length:] == image_extension and word_length > 8:
+                        list_of_words[wrdx] = '<a href="' + list_of_words[wrdx] + '">' + \
+                                                    list_of_words[wrdx] + '</a>' + \
+                                                    '<button class="picture-link">View Image</button>'
+            # If it's a non-youtube/normal link
+            elif (list_of_words[wrdx][0:7] == "http://" or list_of_words[wrdx][0:8] == "https://") and word_length > 8:
+                list_of_words[wrdx] = '<a href="' + list_of_words[wrdx] + '">' + \
+                                            list_of_words[wrdx] + '</a>'
+
         except:
-            print("")
+            pass
     response = ""
     for word in list_of_words:
         response += word + ' '
