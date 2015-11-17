@@ -12,11 +12,11 @@ A twitter clone written in Python w/ Flask
 * Users can upvote/downvote tweets (Once per tweet per user)
 * Retweeting Tweets
 * Follow/Unfollow System
-* Follower 
-* User Profiles
+* Follower Feed (Only see Tweets from the people you follow)
+* User Profiles (Still need to add bios)
 * Wipe the database by going to http://websiteurl.com/hiroshima
 
 
 # Known Issues
 * Currently all usernames/passwords stored in the User table in the database are stored in plaintext
-* Currently redirecting users with the meta tag, which is not recommended.  
+* Currently redirecting users with the meta tag, which is not recommended by the W3C.
