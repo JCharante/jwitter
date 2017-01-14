@@ -500,8 +500,8 @@ def user_profile(username):
         return make_response(redirect(url_for('index')))
 
 # Wipes the DB
-@app.route('/hiroshima')
-def hiroshima():
+@app.route('/wipe_tables')
+def wipe_tables():
     Tweet.query.delete()
     Like.query.delete()
     User.query.delete()
